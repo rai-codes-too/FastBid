@@ -34,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             fontSize: '0.825rem',
             color: 'var(--text-muted)',
           }}>
-            FastBid · NISER Marketplace · Transactions are offline. Stay safe.
+            FastBid - NISER Marketplace - Contact pritipriya.dasbehera@niser.ac.in for issues
           </footer>
         </ThemeProvider>
       </body>

@@ -162,7 +162,7 @@ export default function CreateListingPage() {
                       color: form.duration_type === d ? 'var(--accent-text)' : 'var(--text-muted)',
                       transition: 'all 0.15s',
                     }}>
-                    {d === 'fixed' ? '📅 Fixed Duration' : '♾️ Open Until Sold'}
+                    {d === 'fixed' ? 'Fixed Duration' : 'Open Until Sold'}
                   </button>
                 ))}
               </div>
@@ -248,7 +248,7 @@ export default function CreateListingPage() {
 
           <button type="submit" className="btn-primary" disabled={loading}
             style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: '1rem' }}>
-            {loading ? 'Publishing…' : '🚀 Publish Listing'}
+            {loading ? 'Publishing…' : 'Publish Listing'}
           </button>
         </form>
       </div>
