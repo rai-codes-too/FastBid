@@ -1,18 +1,16 @@
 export type Category =
   | 'Electronics'
   | 'Books'
-  | 'Clothing'
   | 'Furniture'
   | 'Sports'
   | 'Stationery'
-  | 'Food'
   | 'Vehicles'
   | 'Musical Instruments'
   | 'Other'
 
 export const CATEGORIES: Category[] = [
-  'Electronics', 'Books', 'Clothing', 'Furniture', 'Sports',
-  'Stationery', 'Food', 'Vehicles', 'Musical Instruments', 'Other'
+  'Electronics', 'Books', 'Furniture', 'Sports',
+  'Stationery', 'Vehicles', 'Musical Instruments', 'Other'
 ]
 
 // ─── EDIT HOSTELS HERE ───────────────────────────────────────────────────────

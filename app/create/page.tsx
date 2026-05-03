@@ -109,7 +109,7 @@ export default function CreateListingPage() {
           {/* Basic Info */}
           <SectionCard title="Basic Info">
             <Field label="Title *">
-              <input type="text" className="input" placeholder="e.g. HP Pavilion Laptop 15-inch"
+              <input type="text" className="input" placeholder="e.g. 4 Tier book Shelf"
                 value={form.title} onChange={e => upd('title', e.target.value)} required maxLength={100} />
             </Field>
             <Field label="Description">
