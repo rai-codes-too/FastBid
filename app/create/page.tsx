@@ -109,7 +109,7 @@ export default function CreateListingPage() {
           {/* Basic Info */}
           <SectionCard title="Basic Info">
             <Field label="Title *">
-              <input type="text" className="input" placeholder="e.g. HP Pavilion Laptop 15-inch"
+              <input type="text" className="input" placeholder="e.g. Itroduction to Real Analysis by Christopher Heil"
                 value={form.title} onChange={e => upd('title', e.target.value)} required maxLength={100} />
             </Field>
             <Field label="Description">
@@ -162,7 +162,7 @@ export default function CreateListingPage() {
                       color: form.duration_type === d ? 'var(--accent-text)' : 'var(--text-muted)',
                       transition: 'all 0.15s',
                     }}>
-                    {d === 'fixed' ? '📅 Fixed Duration' : '♾️ Open Until Sold'}
+                    {d === 'fixed' ? 'Fixed Duration' : 'Open Until Sold'}
                   </button>
                 ))}
               </div>
@@ -248,7 +248,7 @@ export default function CreateListingPage() {
 
           <button type="submit" className="btn-primary" disabled={loading}
             style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: '1rem' }}>
-            {loading ? 'Publishing…' : '🚀 Publish Listing'}
+            {loading ? 'Publishing…' : 'Publish Listing'}
           </button>
         </form>
       </div>

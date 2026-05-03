@@ -9,6 +9,8 @@ import FilterBar from '@/components/listings/FilterBar'
 import type { Listing, Category } from '@/lib/types'
 import { isListingActive } from '@/lib/utils'
 
+console.log("SUPABASE URL:", process.env.NEXT_PUBLIC_SUPABASE_URL)
+
 export default function HomePage() {
   const [listings, setListings] = useState<Listing[]>([])
   const [featured, setFeatured] = useState<Listing[]>([])
