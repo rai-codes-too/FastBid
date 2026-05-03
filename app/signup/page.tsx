@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Zap, Mail, Lock, User, Phone, Home, AlertCircle, CheckCircle } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Zap, Mail, Lock, User, Phone, Home, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { HOSTELS } from '@/lib/types'
 
@@ -17,11 +18,11 @@ const Field = ({ label, hint, children }: { label: string; hint?: string; childr
 )
 
 export default function SignupPage() {
-  const [form, setForm]     = useState({ name: '', email: '', password: '', contact: '', hostel: '' })
+  const [form, setForm]       = useState({ name: '', email: '', password: '', contact: '', hostel: '' })
   const [loading, setLoading] = useState(false)
-  const [error, setError]   = useState('')
-  const [success, setSuccess] = useState(false)
+  const [error, setError]     = useState('')
   const supabase = createClient()
+  const router   = useRouter()
   const upd = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -35,30 +36,8 @@ export default function SignupPage() {
     })
     setLoading(false)
     if (error) setError(error.message)
-    else setSuccess(true)
+    else { router.push('/'); router.refresh() }
   }
-
-  if (success) return (
-    <div style={{ minHeight: '85vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-      <div style={{ textAlign: 'center', maxWidth: '380px' }}>
-        <div style={{
-          width: '64px', height: '64px', borderRadius: '50%',
-          background: 'var(--green-subtle)', display: 'flex',
-          alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px',
-        }}>
-          <CheckCircle size={32} color="var(--green)" />
-        </div>
-        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800, marginBottom: '12px' }}>
-          Check your email
-        </h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.7, marginBottom: '24px' }}>
-          We sent a confirmation link to <strong style={{ color: 'var(--text)' }}>{form.email}</strong>.
-          Click it to activate — your profile will be created automatically.
-        </p>
-        <Link href="/login" className="btn-primary">Go to Sign In</Link>
-      </div>
-    </div>
-  )
 
   return (
     <div style={{ minHeight: '85vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
@@ -86,7 +65,7 @@ export default function SignupPage() {
             </div>
           </Field>
 
-          <Field label="Email *" hint="Preferably use your NISER email">
+          <Field label="Email *">
             <div className="input-icon-wrap">
               <span className="icon"><Mail size={16} /></span>
               <input type="email" className="input" placeholder="you@niser.ac.in"

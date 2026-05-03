@@ -2,8 +2,8 @@
 
 /* ── Fonts ──────────────────────────────────────────────────────────────── */
 :root {
-  --font-display: 'Syne', sans-serif;
-  --font-body: 'Space Grotesk', sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
 }
 
 /* ── Light theme ────────────────────────────────────────────────────────── */
@@ -330,4 +330,19 @@ textarea.input { resize: vertical; }
 *:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* ── Centred narrow content (forms, detail pages) ───────────────────────── */
+.page-content {
+  width: 100%;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.page-content-wide {
+  width: 100%;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
 }

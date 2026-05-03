@@ -40,15 +40,15 @@ export default function ProfilePage() {
   }
 
   if (loading) return (
-    <div className="page-container" style={{ paddingTop: '48px' }}>
+    <div style={{ minHeight: '85vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div className="animate-pulse" style={{ height: '32px', width: '200px', borderRadius: '8px', background: 'var(--bg-subtle)' }} />
     </div>
   )
 
   return (
-    <div className="page-container" style={{ paddingTop: '40px', paddingBottom: '60px' }}>
-      <div style={{ maxWidth: '480px' }}>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', fontWeight: 800, marginBottom: '8px' }}>
+    <div style={{ minHeight: '85vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '48px 24px 80px' }}>
+      <div style={{ width: '100%', maxWidth: '480px' }}>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 700, marginBottom: '6px' }}>
           Edit Profile
         </h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '28px' }}>

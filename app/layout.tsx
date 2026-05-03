@@ -14,7 +14,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        {/* Inter: clean neutral body font. Fraunces: warm editorial serif for headings. */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,400&family=Inter:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
       </head>
       <body className="font-body bg-bg text-text antialiased">
         <ThemeProvider>
@@ -22,8 +26,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="min-h-screen">
             {children}
           </main>
-          <footer className="border-t border-border mt-16 py-8 text-center text-sm text-muted">
-            <p>FastBid · NISER Marketplace · Transactions are offline. Stay safe.</p>
+          <footer style={{
+            borderTop: '1px solid var(--border)',
+            marginTop: '64px',
+            padding: '32px 24px',
+            textAlign: 'center',
+            fontSize: '0.825rem',
+            color: 'var(--text-muted)',
+          }}>
+            FastBid · NISER Marketplace · Transactions are offline. Stay safe.
           </footer>
         </ThemeProvider>
       </body>
