@@ -84,7 +84,6 @@ export default function BidForm({ listingId, startingPrice, highestBid, userId, 
               flex: 1, minWidth: '100px',
               padding: '10px 14px', borderRadius: '10px',
               background: 'var(--green-subtle)', border: '1px solid var(--green)',
-              borderOpacity: 0.3,
             }}>
               <p style={{ fontSize: '0.7rem', color: 'var(--green)', fontWeight: 600, marginBottom: '3px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Highest Bid
@@ -151,7 +150,6 @@ export default function BidForm({ listingId, startingPrice, highestBid, userId, 
           display: 'flex', alignItems: 'flex-start', gap: '10px',
           padding: '12px 14px', borderRadius: '10px',
           background: 'var(--accent-subtle)', border: '1px solid var(--accent)',
-          borderOpacity: 0.25,
         }}>
           <AlertCircle size={15} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: '1px' }} />
           <p style={{ fontSize: '0.8rem', color: 'var(--accent-text)', lineHeight: 1.6 }}>
