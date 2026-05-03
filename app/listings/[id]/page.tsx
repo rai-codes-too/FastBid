@@ -13,17 +13,23 @@ import BidHistory from '@/components/bids/BidHistory'
 import { formatCurrency, formatDate, formatTimeLeft, isListingActive } from '@/lib/utils'
 import type { Listing, Profile } from '@/lib/types'
 
+const CAT_COLORS: Record<string, string> = {
+  'Electronics': '#3b82f6', 'Books': '#8b5cf6', 'Clothing': '#ec4899',
+  'Furniture': '#f59e0b', 'Sports': '#10b981', 'Stationery': '#6366f1',
+  'Food': '#ef4444', 'Vehicles': '#f97316', 'Musical Instruments': '#14b8a6', 'Other': '#6b7280',
+}
+
 export default function ListingDetailPage() {
-  const { id } = useParams<{ id: string }>()
-  const router = useRouter()
-  const [listing, setListing] = useState<Listing | null>(null)
-  const [user, setUser] = useState<Profile | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [activeImg, setActiveImg] = useState(0)
+  const { id }   = useParams<{ id: string }>()
+  const router   = useRouter()
+  const [listing, setListing]         = useState<Listing | null>(null)
+  const [user, setUser]               = useState<Profile | null>(null)
+  const [loading, setLoading]         = useState(true)
+  const [activeImg, setActiveImg]     = useState(0)
   const [reportReason, setReportReason] = useState('')
-  const [reportSent, setReportSent] = useState(false)
-  const [showReport, setShowReport] = useState(false)
-  const supabase = createClient()
+  const [reportSent, setReportSent]   = useState(false)
+  const [showReport, setShowReport]   = useState(false)
+  const supabase    = createClient()
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 
   useEffect(() => {
@@ -32,9 +38,7 @@ export default function ListingDetailPage() {
         supabase.from('listings_with_bids').select('*').eq('id', id).single(),
         supabase.auth.getUser(),
       ])
-
       setListing(listingData as Listing)
-
       if (authUser) {
         const { data: profile } = await supabase.from('profiles').select('*').eq('id', authUser.id).single()
         setUser(profile)
@@ -49,270 +53,304 @@ export default function ListingDetailPage() {
     await supabase.from('listings').delete().eq('id', id)
     router.push('/')
   }
-
   const handleFeature = async () => {
     await supabase.from('listings').update({ is_featured: !listing!.is_featured }).eq('id', id)
     setListing(l => l ? { ...l, is_featured: !l.is_featured } : l)
   }
-
   const handleDeactivate = async () => {
     await supabase.from('listings').update({ is_active: !listing!.is_active }).eq('id', id)
     setListing(l => l ? { ...l, is_active: !l.is_active } : l)
   }
-
   const handleReport = async () => {
     if (!user || !reportReason.trim()) return
-    await supabase.from('reports').insert({
-      listing_id: id,
-      reporter_id: user.id,
-      reason: reportReason,
-    })
+    await supabase.from('reports').insert({ listing_id: id, reporter_id: user.id, reason: reportReason })
     setReportSent(true)
     setShowReport(false)
   }
 
-  if (loading) {
-    return (
-      <div className="page-container" style={{ paddingTop: "48px" }}>
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 rounded-lg w-1/3" style={{ backgroundColor: 'var(--bg-subtle)' }} />
-          <div className="h-80 rounded-2xl" style={{ backgroundColor: 'var(--bg-subtle)' }} />
-        </div>
+  if (loading) return (
+    <div style={{ padding: '48px 24px' }}>
+      <div style={{ maxWidth: '1040px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {[300, 80, 200].map((h, i) => (
+          <div key={i} className="animate-pulse card" style={{ height: `${h}px`, background: 'var(--bg-subtle)' }} />
+        ))}
       </div>
-    )
-  }
+    </div>
+  )
 
-  if (!listing) {
-    return (
-      <div className="max-w-5xl mx-auto px-4 py-12 text-center">
-        <p className="text-4xl mb-4">🔍</p>
-        <h2 className="font-display text-xl font-bold">Listing not found</h2>
-        <Link href="/" className="btn-primary mt-4 inline-flex">Back to home</Link>
-      </div>
-    )
-  }
+  if (!listing) return (
+    <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
+      <p style={{ fontSize: '3rem' }}>🔍</p>
+      <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700 }}>Listing not found</h2>
+      <Link href="/" className="btn-primary">Back to home</Link>
+    </div>
+  )
 
-  const active = isListingActive(listing)
-  const isSeller = user?.id === listing.seller_id
-  const isAdmin = user?.is_admin
+  const active      = isListingActive(listing)
+  const isSeller    = user?.id === listing.seller_id
+  const isAdmin     = user?.is_admin
+  const catColor    = CAT_COLORS[listing.category] || '#6b7280'
   const whatsappUrl = listing.seller_contact
     ? `https://wa.me/${listing.seller_contact.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi, I'm interested in your listing "${listing.title}" on FastBid!`)}`
     : null
 
   return (
-    <div className="page-container" style={{ paddingTop: "40px", paddingBottom: "60px" }}>
-      {/* Back */}
-      <Link href="/" className="flex items-center gap-1 text-sm text-muted hover:text-text mb-6">
-        <ChevronLeft size={16} /> Back to listings
-      </Link>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 24px 80px', minHeight: '85vh' }}>
+      <div style={{ width: '100%', maxWidth: '1040px' }}>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Images + details */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Images */}
-          <div className="card overflow-hidden">
-            <div className="aspect-video relative" style={{ backgroundColor: 'var(--bg-subtle)' }}>
-              {listing.images && listing.images.length > 0 ? (
-                <img
-                  src={`${supabaseUrl}/storage/v1/object/public/listing-images/${listing.images[activeImg]}`}
-                  alt={listing.title}
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-muted">
-                  <Tag size={48} />
+        {/* Back link */}
+        <Link href="/" style={{
+          display: 'inline-flex', alignItems: 'center', gap: '4px',
+          fontSize: '0.875rem', color: 'var(--text-muted)', textDecoration: 'none',
+          marginBottom: '24px',
+        }}
+          onMouseEnter={e => (e.currentTarget.style.color = 'var(--text)')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
+          <ChevronLeft size={16} /> Back to listings
+        </Link>
+
+        {/* Two-column layout */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px', alignItems: 'start' }}>
+
+          {/* ── LEFT column ── */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', minWidth: 0 }}>
+
+            {/* Image */}
+            <div className="card" style={{ overflow: 'hidden' }}>
+              <div style={{ aspectRatio: '16/9', background: 'var(--bg-subtle)', position: 'relative' }}>
+                {listing.images?.length > 0 ? (
+                  <img
+                    src={`${supabaseUrl}/storage/v1/object/public/listing-images/${listing.images[activeImg]}`}
+                    alt={listing.title}
+                    style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+                  />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-light)' }}>
+                    <Tag size={56} strokeWidth={1} />
+                  </div>
+                )}
+                {/* Badges */}
+                <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px' }}>
+                  {listing.is_featured && (
+                    <span className="badge" style={{ background: 'var(--accent)', color: 'white' }}>
+                      <Star size={10} fill="currentColor" strokeWidth={0} /> Featured
+                    </span>
+                  )}
+                  <span className="badge" style={{
+                    background: active ? 'var(--green-subtle)' : 'var(--bg-subtle)',
+                    color: active ? 'var(--green)' : 'var(--text-muted)',
+                  }}>
+                    {active ? <CheckCircle size={10} /> : <XCircle size={10} />}
+                    {active ? 'Active' : 'Ended'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Thumbnails */}
+              {listing.images?.length > 1 && (
+                <div style={{ display: 'flex', gap: '8px', padding: '12px 16px', overflowX: 'auto' }}>
+                  {listing.images.map((img, i) => (
+                    <button key={i} onClick={() => setActiveImg(i)} style={{
+                      flexShrink: 0, width: '64px', height: '64px', borderRadius: '8px',
+                      overflow: 'hidden', border: '2px solid',
+                      borderColor: i === activeImg ? 'var(--accent)' : 'var(--border)',
+                      cursor: 'pointer', padding: 0, background: 'none',
+                      transition: 'border-color 0.15s',
+                    }}>
+                      <img src={`${supabaseUrl}/storage/v1/object/public/listing-images/${img}`}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                    </button>
+                  ))}
                 </div>
               )}
-
-              {/* Status badges */}
-              <div className="absolute top-3 left-3 flex gap-2">
-                {listing.is_featured && (
-                  <span className="badge text-white text-xs" style={{ backgroundColor: 'var(--accent)' }}>
-                    <Star size={11} fill="currentColor" /> Featured
-                  </span>
-                )}
-                <span className={`badge text-xs ${active ? 'text-green' : 'text-muted'}`}
-                  style={{ backgroundColor: active ? 'var(--green-subtle)' : 'var(--bg-subtle)' }}>
-                  {active ? <CheckCircle size={11} /> : <XCircle size={11} />}
-                  {active ? 'Active' : 'Ended'}
-                </span>
-              </div>
             </div>
 
-            {/* Thumbnails */}
-            {listing.images && listing.images.length > 1 && (
-              <div className="flex gap-2 p-3 overflow-x-auto">
-                {listing.images.map((img, i) => (
-                  <button key={i} onClick={() => setActiveImg(i)}
-                    className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${i === activeImg ? 'border-accent' : 'border-transparent'}`}>
-                    <img src={`${supabaseUrl}/storage/v1/object/public/listing-images/${img}`}
-                      className="w-full h-full object-cover" alt="" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+            {/* Details card */}
+            <div className="card" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-          {/* Details */}
-          <div className="card p-5 space-y-4">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <span className="badge text-white text-xs mb-2" style={{ backgroundColor: '#6366f1' }}>
-                  {listing.category}
-                </span>
-                <h1 className="font-display text-2xl font-bold leading-snug">{listing.title}</h1>
-              </div>
-              {(isSeller || isAdmin) && (
-                <div className="flex gap-2 shrink-0">
-                  {isAdmin && (
-                    <button onClick={handleFeature} className="btn-secondary px-2 py-2 text-xs"
-                      title={listing.is_featured ? 'Unfeature' : 'Feature'}>
-                      {listing.is_featured ? <StarOff size={15} /> : <Star size={15} />}
-                    </button>
-                  )}
-                  {(isSeller || isAdmin) && (
-                    <button onClick={handleDeactivate} className="btn-secondary px-2 py-2 text-xs">
+              {/* Title row */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
+                <div style={{ minWidth: 0 }}>
+                  <span className="badge" style={{ background: catColor, color: 'white', marginBottom: '10px' }}>
+                    {listing.category}
+                  </span>
+                  <h1 style={{
+                    fontFamily: 'var(--font-display)', fontSize: '1.75rem',
+                    fontWeight: 700, lineHeight: 1.25, color: 'var(--text)',
+                  }}>
+                    {listing.title}
+                  </h1>
+                </div>
+
+                {/* Seller/admin controls */}
+                {(isSeller || isAdmin) && (
+                  <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                    {isAdmin && (
+                      <button onClick={handleFeature} className="btn-secondary" style={{ padding: '8px 10px' }}
+                        title={listing.is_featured ? 'Unfeature' : 'Feature'}>
+                        {listing.is_featured ? <StarOff size={15} /> : <Star size={15} />}
+                      </button>
+                    )}
+                    <button onClick={handleDeactivate} className="btn-secondary" style={{ padding: '8px 10px' }}>
                       {listing.is_active ? <XCircle size={15} /> : <CheckCircle size={15} />}
                     </button>
-                  )}
-                  <button onClick={handleDelete} className="btn-secondary px-2 py-2 text-red-500">
-                    <Trash2 size={15} />
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Pricing */}
-            <div className="flex gap-6 py-3 border-y" style={{ borderColor: 'var(--border)' }}>
-              <div>
-                <p className="text-xs text-muted">Starting Price</p>
-                <p className="font-display text-2xl font-bold">{formatCurrency(listing.starting_price)}</p>
-              </div>
-              {(listing.highest_bid ?? 0) > 0 && (
-                <div>
-                  <p className="text-xs text-muted">Highest Bid</p>
-                  <p className="font-display text-2xl font-bold text-green">
-                    {formatCurrency(listing.highest_bid ?? 0)}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Description */}
-            {listing.description && (
-              <div>
-                <h3 className="font-semibold text-sm mb-2">Description</h3>
-                <p className="text-sm text-muted leading-relaxed whitespace-pre-wrap">{listing.description}</p>
-              </div>
-            )}
-
-            {/* Tags */}
-            {listing.tags && listing.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {listing.tags.map(tag => (
-                  <span key={tag} className="badge text-xs"
-                    style={{ backgroundColor: 'var(--bg-subtle)', color: 'var(--text-muted)' }}>
-                    # {tag}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Meta */}
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="flex items-center gap-2 text-muted">
-                <Clock size={14} />
-                {formatTimeLeft(listing.ends_at, listing.duration_type)}
-              </div>
-              {listing.hostel && (
-                <div className="flex items-center gap-2 text-muted">
-                  <MapPin size={14} />
-                  {listing.hostel}
-                </div>
-              )}
-              <div className="flex items-center gap-2 text-muted">
-                <Clock size={14} />
-                Listed {formatDate(listing.created_at)}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right: Bid + Seller */}
-        <div className="space-y-4">
-          {/* Bid form */}
-          <BidForm
-            listingId={listing.id}
-            startingPrice={listing.starting_price}
-            highestBid={listing.highest_bid ?? 0}
-            userId={user?.id ?? null}
-            sellerId={listing.seller_id}
-            isActive={active}
-          />
-
-          {/* Seller card */}
-          <div className="card p-4 space-y-3">
-            <h3 className="font-display font-semibold flex items-center gap-2">
-              <User size={15} className="text-accent" />
-              Seller
-            </h3>
-            <div>
-              <p className="font-medium">{listing.seller_name}</p>
-              {listing.seller_hostel && (
-                <p className="text-sm text-muted flex items-center gap-1 mt-1">
-                  <MapPin size={12} /> {listing.seller_hostel}
-                </p>
-              )}
-            </div>
-
-            {listing.seller_contact && (
-              <div className="space-y-2">
-                <a href={`tel:${listing.seller_contact}`}
-                  className="btn-secondary w-full justify-center text-sm py-2">
-                  <Phone size={14} /> {listing.seller_contact}
-                </a>
-                {whatsappUrl && (
-                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
-                    className="btn-primary w-full justify-center text-sm py-2"
-                    style={{ backgroundColor: '#25D366' }}>
-                    <MessageCircle size={14} /> WhatsApp
-                  </a>
-                )}
-              </div>
-            )}
-
-            {user && user.id !== listing.seller_id && (
-              <div className="pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
-                {reportSent ? (
-                  <p className="text-xs text-green flex items-center gap-1">
-                    <CheckCircle size={12} /> Report submitted
-                  </p>
-                ) : showReport ? (
-                  <div className="space-y-2">
-                    <textarea
-                      className="input text-sm resize-none"
-                      rows={2}
-                      placeholder="Reason for report..."
-                      value={reportReason}
-                      onChange={e => setReportReason(e.target.value)}
-                    />
-                    <div className="flex gap-2">
-                      <button onClick={() => setShowReport(false)} className="btn-secondary text-xs py-1.5 px-3">Cancel</button>
-                      <button onClick={handleReport} className="btn-primary text-xs py-1.5 px-3">Submit</button>
-                    </div>
+                    <button onClick={handleDelete} className="btn-secondary" style={{ padding: '8px 10px', color: '#ef4444' }}>
+                      <Trash2 size={15} />
+                    </button>
                   </div>
-                ) : (
-                  <button onClick={() => setShowReport(true)}
-                    className="text-xs text-muted flex items-center gap-1 hover:text-accent">
-                    <Flag size={12} /> Report listing
-                  </button>
                 )}
               </div>
-            )}
+
+              {/* Price row */}
+              <div style={{
+                display: 'flex', gap: '32px', padding: '16px 0',
+                borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)',
+              }}>
+                <div>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 500 }}>Starting Price</p>
+                  <p style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>
+                    {formatCurrency(listing.starting_price)}
+                  </p>
+                </div>
+                {(listing.highest_bid ?? 0) > 0 && (
+                  <div>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 500 }}>Highest Bid</p>
+                    <p style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 800, lineHeight: 1, color: 'var(--green)' }}>
+                      {formatCurrency(listing.highest_bid ?? 0)}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Description */}
+              {listing.description && (
+                <div>
+                  <h3 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '10px' }}>Description</h3>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.75, whiteSpace: 'pre-wrap' }}>
+                    {listing.description}
+                  </p>
+                </div>
+              )}
+
+              {/* Tags */}
+              {listing.tags?.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {listing.tags.map(tag => (
+                    <span key={tag} className="badge" style={{ background: 'var(--bg-subtle)', color: 'var(--text-muted)' }}>
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Meta */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Clock size={14} /> {formatTimeLeft(listing.ends_at, listing.duration_type)}
+                </span>
+                {listing.hostel && (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <MapPin size={14} /> {listing.hostel}
+                  </span>
+                )}
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Clock size={14} /> Listed {formatDate(listing.created_at)}
+                </span>
+              </div>
+            </div>
           </div>
 
-          {/* Bid history */}
-          <BidHistory listingId={listing.id} startingPrice={listing.starting_price} />
+          {/* ── RIGHT column ── */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', position: 'sticky', top: '72px' }}>
+
+            {/* Bid form */}
+            <BidForm
+              listingId={listing.id}
+              startingPrice={listing.starting_price}
+              highestBid={listing.highest_bid ?? 0}
+              userId={user?.id ?? null}
+              sellerId={listing.seller_id}
+              isActive={active}
+            />
+
+            {/* Seller card */}
+            <div className="card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <User size={15} style={{ color: 'var(--accent)' }} /> Seller
+              </h3>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '40px', height: '40px', borderRadius: '10px', flexShrink: 0,
+                  background: 'var(--accent-subtle)', color: 'var(--accent)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.1rem',
+                }}>
+                  {listing.seller_name?.[0]?.toUpperCase()}
+                </div>
+                <div>
+                  <p style={{ fontWeight: 600, fontSize: '0.95rem' }}>{listing.seller_name}</p>
+                  {listing.seller_hostel && (
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                      <MapPin size={12} /> {listing.seller_hostel}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {listing.seller_contact && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <a href={`tel:${listing.seller_contact}`} className="btn-secondary" style={{ width: '100%', justifyContent: 'center', fontSize: '0.875rem', padding: '9px' }}>
+                    <Phone size={14} /> {listing.seller_contact}
+                  </a>
+                  {whatsappUrl && (
+                    <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
+                      className="btn-primary" style={{ width: '100%', justifyContent: 'center', fontSize: '0.875rem', padding: '9px', background: '#22c55e' }}>
+                      <MessageCircle size={14} /> WhatsApp
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {/* Report */}
+              {user && user.id !== listing.seller_id && (
+                <div style={{ paddingTop: '12px', borderTop: '1px solid var(--border)' }}>
+                  {reportSent ? (
+                    <p style={{ fontSize: '0.8rem', color: 'var(--green)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <CheckCircle size={13} /> Report submitted
+                    </p>
+                  ) : showReport ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <textarea className="input" rows={2} style={{ resize: 'none', fontSize: '0.85rem' }}
+                        placeholder="Reason for report…"
+                        value={reportReason} onChange={e => setReportReason(e.target.value)} />
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={() => setShowReport(false)} className="btn-secondary" style={{ flex: 1, justifyContent: 'center', fontSize: '0.8rem', padding: '7px' }}>Cancel</button>
+                        <button onClick={handleReport} className="btn-primary" style={{ flex: 1, justifyContent: 'center', fontSize: '0.8rem', padding: '7px' }}>Submit</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button onClick={() => setShowReport(true)} style={{
+                      background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                      fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px',
+                      fontFamily: 'var(--font-body)',
+                    }}
+                      onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
+                      onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
+                      <Flag size={12} /> Report listing
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Bid history */}
+            <BidHistory
+              listingId={listing.id}
+              startingPrice={listing.starting_price}
+              isSeller={isSeller || (isAdmin ?? false)}
+            />
+          </div>
         </div>
       </div>
     </div>
