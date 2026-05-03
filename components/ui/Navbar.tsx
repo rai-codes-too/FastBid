@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Sun, Moon, Plus, User, LogOut, LayoutDashboard, ShieldCheck, Zap, Pencil } from 'lucide-react'
+import { Sun, Moon, Plus, User, LogOut, LayoutDashboard, ShieldCheck, Zap, Pencil, ChevronDown } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useTheme } from './ThemeProvider'
 import type { Profile } from '@/lib/types'
@@ -17,9 +17,7 @@ export default function Navbar() {
   const pathname = usePathname()
   const supabase = createClient()
 
-  useEffect(() => {
-    setMenuOpen(false)
-  }, [pathname])
+  useEffect(() => { setMenuOpen(false) }, [pathname])
 
   useEffect(() => {
     const getProfile = async () => {
@@ -32,23 +30,17 @@ export default function Navbar() {
       }
       setLoading(false)
     }
-
     getProfile()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
+        supabase.from('profiles').select('*').eq('id', session.user.id).single()
           .then(({ data }) => setProfile(data))
       } else {
         setProfile(null)
       }
       setLoading(false)
     })
-
     return () => subscription.unsubscribe()
   }, [])
 
@@ -60,18 +52,75 @@ export default function Navbar() {
     router.refresh()
   }
 
+  const MenuItem = ({
+    href, onClick, icon: Icon, label, danger, accent, mobileOnly,
+  }: {
+    href?: string; onClick?: () => void; icon: React.ElementType;
+    label: string; danger?: boolean; accent?: boolean; mobileOnly?: boolean;
+  }) => {
+    const style: React.CSSProperties = {
+      display: 'flex', alignItems: 'center', gap: '12px',
+      padding: '10px 16px', borderRadius: '8px', width: '100%',
+      fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer',
+      textDecoration: 'none', border: 'none', background: 'none',
+      color: danger ? '#ef4444' : accent ? 'var(--accent)' : 'var(--text)',
+      fontFamily: 'var(--font-body)',
+      transition: 'background 0.12s',
+    }
+    const onHover = (e: React.MouseEvent<HTMLElement>, enter: boolean) => {
+      (e.currentTarget as HTMLElement).style.background = enter
+        ? (danger ? 'rgba(239,68,68,0.08)' : 'var(--bg-subtle)')
+        : 'none'
+    }
+
+    const content = (
+      <>
+        <span style={{
+          width: '30px', height: '30px', borderRadius: '7px', flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: danger ? 'rgba(239,68,68,0.1)' : accent ? 'var(--accent-subtle)' : 'var(--bg-subtle)',
+          color: danger ? '#ef4444' : accent ? 'var(--accent)' : 'var(--text-muted)',
+        }}>
+          <Icon size={15} />
+        </span>
+        {label}
+      </>
+    )
+
+    if (href) return (
+      <Link href={href} onClick={onClick} style={style}
+        onMouseEnter={e => onHover(e, true)} onMouseLeave={e => onHover(e, false)}
+        className={mobileOnly ? 'sm:hidden' : ''}>
+        {content}
+      </Link>
+    )
+    return (
+      <button onClick={onClick} style={style}
+        onMouseEnter={e => onHover(e, true)} onMouseLeave={e => onHover(e, false)}>
+        {content}
+      </button>
+    )
+  }
+
   return (
-    <nav style={{ backgroundColor: 'var(--bg-card)', borderBottom: '1px solid var(--border)' }}
-      className="sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2 font-display font-bold text-lg tracking-tight">
-          <Zap size={20} className="text-accent" fill="currentColor" />
-          <span>FastBid</span>
-          <span className="text-muted font-body font-normal text-sm hidden sm:inline">· NISER</span>
+    <nav style={{ backgroundColor: 'var(--bg-card)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 50 }}>
+      <div className="page-container" style={{ height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+
+        {/* Logo */}
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.1rem', color: 'var(--text)' }}>
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '7px', background: 'var(--accent)' }}>
+            <Zap size={16} fill="white" color="white" />
+          </span>
+          FastBid
+          <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)', fontWeight: 400, fontSize: '0.85rem' }}
+            className="hidden sm:inline">· NISER</span>
         </Link>
 
-        <div className="flex items-center gap-2">
-          <button onClick={toggle} className="btn-secondary px-2 py-2" title="Toggle theme">
+        {/* Right */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+
+          {/* Theme toggle */}
+          <button onClick={toggle} className="btn-secondary" style={{ padding: '8px', borderRadius: '8px' }} title="Toggle theme">
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </button>
 
@@ -79,54 +128,89 @@ export default function Navbar() {
             <>
               {profile ? (
                 <>
-                  <Link href="/create" className="btn-primary text-sm py-2 px-3 hidden sm:flex">
-                    <Plus size={15} />
-                    List Item
+                  {/* List Item button */}
+                  <Link href="/create" className="btn-primary hidden sm:flex" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+                    <Plus size={15} /> List Item
                   </Link>
-                  <div className="relative">
+
+                  {/* Profile dropdown */}
+                  <div style={{ position: 'relative' }}>
                     <button
-                      onClick={() => setMenuOpen(!menuOpen)}
-                      className="btn-secondary px-2 py-2 gap-2 text-sm"
+                      onClick={() => setMenuOpen(o => !o)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '8px',
+                        padding: '6px 10px 6px 8px',
+                        background: menuOpen ? 'var(--bg-subtle)' : 'var(--bg-card)',
+                        border: '1.5px solid', borderColor: menuOpen ? 'var(--border-strong)' : 'var(--border)',
+                        borderRadius: '10px', cursor: 'pointer', transition: 'all 0.15s',
+                        fontFamily: 'var(--font-body)',
+                      }}
                     >
-                      <User size={16} />
-                      <span className="hidden sm:inline max-w-24 truncate">{profile.name.split(' ')[0]}</span>
+                      {/* Avatar */}
+                      <span style={{
+                        width: '28px', height: '28px', borderRadius: '7px', flexShrink: 0,
+                        background: 'var(--accent)', color: 'white',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontFamily: 'var(--font-display)', fontSize: '0.8rem', fontWeight: 700,
+                      }}>
+                        {profile.name[0].toUpperCase()}
+                      </span>
+                      <span className="hidden sm:block" style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text)', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {profile.name.split(' ')[0]}
+                      </span>
+                      <ChevronDown size={14} style={{ color: 'var(--text-muted)', transition: 'transform 0.2s', transform: menuOpen ? 'rotate(180deg)' : 'none', flexShrink: 0 }} />
                     </button>
+
                     {menuOpen && (
                       <>
-                        <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-                        <div className="absolute right-0 top-full mt-1 card p-1 w-52 z-50 shadow-lg">
-                          <div className="px-3 py-2 border-b mb-1" style={{ borderColor: 'var(--border)' }}>
-                            <p className="text-sm font-medium truncate">{profile.name}</p>
-                            <p className="text-xs text-muted truncate">{profile.hostel || 'No hostel set'}</p>
+                        {/* Backdrop */}
+                        <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setMenuOpen(false)} />
+
+                        {/* Dropdown panel */}
+                        <div className="card fade-in" style={{
+                          position: 'absolute', right: 0, top: 'calc(100% + 8px)',
+                          width: '220px', zIndex: 50,
+                          boxShadow: 'var(--shadow-lg)',
+                          padding: '8px',
+                          display: 'flex', flexDirection: 'column', gap: '2px',
+                        }}>
+                          {/* User info header */}
+                          <div style={{
+                            padding: '12px 14px 14px',
+                            marginBottom: '4px',
+                            borderBottom: '1px solid var(--border)',
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <span style={{
+                                width: '36px', height: '36px', borderRadius: '9px', flexShrink: 0,
+                                background: 'var(--accent)', color: 'white',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 700,
+                              }}>
+                                {profile.name[0].toUpperCase()}
+                              </span>
+                              <div style={{ minWidth: 0 }}>
+                                <p style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {profile.name}
+                                </p>
+                                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '1px' }}>
+                                  {profile.hostel || 'No hostel set'}
+                                </p>
+                              </div>
+                            </div>
                           </div>
-                          <Link href="/profile" onClick={() => setMenuOpen(false)}
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-subtle w-full">
-                            <Pencil size={15} />
-                            Edit Profile
-                          </Link>
-                          <Link href="/dashboard" onClick={() => setMenuOpen(false)}
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-subtle w-full">
-                            <LayoutDashboard size={15} />
-                            Dashboard
-                          </Link>
+
+                          {/* Menu items */}
+                          <MenuItem href="/profile" onClick={() => setMenuOpen(false)} icon={Pencil} label="Edit Profile" />
+                          <MenuItem href="/dashboard" onClick={() => setMenuOpen(false)} icon={LayoutDashboard} label="Dashboard" />
                           {profile.is_admin && (
-                            <Link href="/admin" onClick={() => setMenuOpen(false)}
-                              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-subtle w-full text-accent">
-                              <ShieldCheck size={15} />
-                              Admin Panel
-                            </Link>
+                            <MenuItem href="/admin" onClick={() => setMenuOpen(false)} icon={ShieldCheck} label="Admin Panel" accent />
                           )}
-                          <Link href="/create" onClick={() => setMenuOpen(false)}
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-subtle w-full sm:hidden">
-                            <Plus size={15} />
-                            List Item
-                          </Link>
-                          <hr style={{ borderColor: 'var(--border)' }} className="my-1" />
-                          <button onClick={handleSignOut}
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-subtle w-full text-left">
-                            <LogOut size={15} />
-                            Sign out
-                          </button>
+                          <MenuItem href="/create" onClick={() => setMenuOpen(false)} icon={Plus} label="List an Item" mobileOnly />
+
+                          <div style={{ height: '1px', background: 'var(--border)', margin: '4px 0' }} />
+
+                          <MenuItem onClick={handleSignOut} icon={LogOut} label="Sign out" danger />
                         </div>
                       </>
                     )}
@@ -134,8 +218,8 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  <Link href="/login" className="btn-secondary text-sm py-2 px-3">Sign in</Link>
-                  <Link href="/signup" className="btn-primary text-sm py-2 px-3">Join</Link>
+                  <Link href="/login" className="btn-secondary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>Sign in</Link>
+                  <Link href="/signup" className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>Join</Link>
                 </>
               )}
             </>

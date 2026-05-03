@@ -70,14 +70,14 @@ export default function AdminPage() {
 
   if (loading || !authorized) {
     return (
-      <div className="max-w-5xl mx-auto px-4 py-12">
+      <div className="page-container" style={{ paddingTop: "48px" }}>
         <div className="animate-pulse h-8 w-48 rounded-lg" style={{ backgroundColor: 'var(--bg-subtle)' }} />
       </div>
     )
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="page-container" style={{ paddingTop: "40px", paddingBottom: "60px" }}>
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center"
           style={{ backgroundColor: 'var(--accent-subtle)' }}>

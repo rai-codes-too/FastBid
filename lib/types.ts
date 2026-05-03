@@ -15,10 +15,19 @@ export const CATEGORIES: Category[] = [
   'Stationery', 'Food', 'Vehicles', 'Musical Instruments', 'Other'
 ]
 
+// ─── EDIT HOSTELS HERE ───────────────────────────────────────────────────────
 export const HOSTELS = [
-  'BH-1', 'BH-2', 'BH-3', 'BH-4', 'BH-5', 'BH-6', 'BH-7',
-  'GH-1', 'GH-2', 'Faculty Quarters', 'Off-Campus'
-]
+  'DoH 1 (Krishna)',
+  'DoH 2 (Bhagirathi)',
+  'DoH 3 (Brahmaputra)',
+  'DoH 4 (Ganga)',
+  'SoH 1 (Mahanadi)',
+  'SoH 2 (Rushikulya)',
+  'SoH 3 (Daya)',
+  'SoH 4 (Kaveri)',
+  'SoH 5 (Yamuna)'
+];
+// ─────────────────────────────────────────────────────────────────────────────
 
 export type DurationType = 'fixed' | 'open'
 
@@ -46,7 +55,6 @@ export interface Listing {
   is_active: boolean
   hostel: string | null
   created_at: string
-  // Joined fields from view
   seller_name?: string
   seller_contact?: string
   seller_hostel?: string
@@ -61,7 +69,6 @@ export interface Bid {
   amount: number
   is_offer: boolean
   created_at: string
-  // Joined
   bidder_name?: string
 }
 

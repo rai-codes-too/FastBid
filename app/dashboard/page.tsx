@@ -52,7 +52,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="page-container" style={{ paddingTop: "48px" }}>
         <div className="animate-pulse space-y-4">
           <div className="h-8 w-48 rounded-lg" style={{ backgroundColor: 'var(--bg-subtle)' }} />
           <div className="h-40 rounded-2xl" style={{ backgroundColor: 'var(--bg-subtle)' }} />
@@ -62,7 +62,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="page-container" style={{ paddingTop: "40px", paddingBottom: "60px" }}>
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>

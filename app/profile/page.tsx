@@ -8,24 +8,21 @@ import { HOSTELS } from '@/lib/types'
 import type { Profile } from '@/lib/types'
 
 export default function ProfilePage() {
-  const router = useRouter()
+  const router   = useRouter()
   const supabase = createClient()
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [form, setForm] = useState({ name: '', contact: '', hostel: '' })
+  const [form, setForm]       = useState({ name: '', contact: '', hostel: '' })
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const [saving, setSaving]   = useState(false)
   const [success, setSuccess] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError]     = useState('')
 
   useEffect(() => {
     const load = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-      if (data) {
-        setProfile(data)
-        setForm({ name: data.name, contact: data.contact || '', hostel: data.hostel || '' })
-      }
+      if (data) { setProfile(data); setForm({ name: data.name, contact: data.contact || '', hostel: data.hostel || '' }) }
       setLoading(false)
     }
     load()
@@ -33,81 +30,81 @@ export default function ProfilePage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSaving(true)
-    setError('')
-    setSuccess(false)
-
-    const { error: updateError } = await supabase
-      .from('profiles')
+    setSaving(true); setError(''); setSuccess(false)
+    const { error } = await supabase.from('profiles')
       .update({ name: form.name, contact: form.contact || null, hostel: form.hostel || null })
       .eq('id', profile!.id)
-
     setSaving(false)
-    if (updateError) setError(updateError.message)
+    if (error) setError(error.message)
     else setSuccess(true)
   }
 
-  if (loading) {
-    return (
-      <div className="max-w-lg mx-auto px-4 py-12">
-        <div className="animate-pulse h-8 w-48 rounded-lg" style={{ backgroundColor: 'var(--bg-subtle)' }} />
-      </div>
-    )
-  }
+  if (loading) return (
+    <div className="page-container" style={{ paddingTop: '48px' }}>
+      <div className="animate-pulse" style={{ height: '32px', width: '200px', borderRadius: '8px', background: 'var(--bg-subtle)' }} />
+    </div>
+  )
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8">
-      <h1 className="font-display text-2xl font-bold mb-6">Edit Profile</h1>
+    <div className="page-container" style={{ paddingTop: '40px', paddingBottom: '60px' }}>
+      <div style={{ maxWidth: '480px' }}>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', fontWeight: 800, marginBottom: '8px' }}>
+          Edit Profile
+        </h1>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '28px' }}>
+          Update your name, contact number, and hostel.
+        </p>
 
-      <form onSubmit={handleSave} className="card p-6 space-y-4">
-        <div>
-          <label className="text-sm font-medium mb-1.5 block">Full Name *</label>
-          <div className="relative">
-            <User size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-            <input type="text" className="input pl-9" value={form.name}
-              onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
-          </div>
-        </div>
+        <form onSubmit={handleSave} className="card" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
 
-        <div>
-          <label className="text-sm font-medium mb-1.5 block">Contact Number</label>
-          <div className="relative">
-            <Phone size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-            <input type="tel" className="input pl-9" placeholder="+91 98765 43210"
-              value={form.contact}
-              onChange={e => setForm(f => ({ ...f, contact: e.target.value }))} />
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '8px' }}>Full Name *</label>
+            <div className="input-icon-wrap">
+              <span className="icon"><User size={16} /></span>
+              <input type="text" className="input" value={form.name}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
+            </div>
           </div>
-        </div>
 
-        <div>
-          <label className="text-sm font-medium mb-1.5 block">Hostel</label>
-          <div className="relative">
-            <Home size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-            <select className="input pl-9 appearance-none" value={form.hostel}
-              onChange={e => setForm(f => ({ ...f, hostel: e.target.value }))}>
-              <option value="">Select hostel</option>
-              {HOSTELS.map(h => <option key={h} value={h}>{h}</option>)}
-            </select>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '8px' }}>Contact Number</label>
+            <div className="input-icon-wrap">
+              <span className="icon"><Phone size={16} /></span>
+              <input type="tel" className="input" placeholder="+91 98765 43210"
+                value={form.contact} onChange={e => setForm(f => ({ ...f, contact: e.target.value }))} />
+            </div>
           </div>
-        </div>
 
-        {error && (
-          <div className="flex items-center gap-2 text-sm p-3 rounded-lg"
-            style={{ backgroundColor: 'var(--accent-subtle)', color: 'var(--accent)' }}>
-            <AlertCircle size={14} /> {error}
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '8px' }}>Hostel</label>
+            <div className="input-icon-wrap">
+              <span className="icon"><Home size={16} /></span>
+              <select className="input" value={form.hostel}
+                onChange={e => setForm(f => ({ ...f, hostel: e.target.value }))}
+                style={{ paddingLeft: '38px' }}>
+                <option value="">Select hostel</option>
+                {HOSTELS.map(h => <option key={h} value={h}>{h}</option>)}
+              </select>
+            </div>
           </div>
-        )}
-        {success && (
-          <div className="flex items-center gap-2 text-sm p-3 rounded-lg"
-            style={{ backgroundColor: 'var(--green-subtle)', color: 'var(--green)' }}>
-            <CheckCircle size={14} /> Profile updated!
-          </div>
-        )}
 
-        <button type="submit" className="btn-primary w-full justify-center" disabled={saving}>
-          {saving ? 'Saving...' : 'Save Changes'}
-        </button>
-      </form>
+          {error && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 14px', borderRadius: '10px', background: 'var(--accent-subtle)', color: 'var(--accent-text)', fontSize: '0.85rem' }}>
+              <AlertCircle size={15} style={{ flexShrink: 0 }} /> {error}
+            </div>
+          )}
+          {success && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 14px', borderRadius: '10px', background: 'var(--green-subtle)', color: 'var(--green)', fontSize: '0.85rem' }}>
+              <CheckCircle size={15} style={{ flexShrink: 0 }} /> Profile updated successfully!
+            </div>
+          )}
+
+          <button type="submit" className="btn-primary" disabled={saving}
+            style={{ width: '100%', justifyContent: 'center', padding: '12px' }}>
+            {saving ? 'Saving…' : 'Save Changes'}
+          </button>
+        </form>
+      </div>
     </div>
   )
 }

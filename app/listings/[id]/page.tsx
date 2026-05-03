@@ -73,7 +73,7 @@ export default function ListingDetailPage() {
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto px-4 py-12">
+      <div className="page-container" style={{ paddingTop: "48px" }}>
         <div className="animate-pulse space-y-4">
           <div className="h-8 rounded-lg w-1/3" style={{ backgroundColor: 'var(--bg-subtle)' }} />
           <div className="h-80 rounded-2xl" style={{ backgroundColor: 'var(--bg-subtle)' }} />
@@ -100,7 +100,7 @@ export default function ListingDetailPage() {
     : null
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="page-container" style={{ paddingTop: "40px", paddingBottom: "60px" }}>
       {/* Back */}
       <Link href="/" className="flex items-center gap-1 text-sm text-muted hover:text-text mb-6">
         <ChevronLeft size={16} /> Back to listings
