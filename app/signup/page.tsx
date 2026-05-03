@@ -12,7 +12,6 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
-  const router = useRouter()
   const supabase = createClient()
 
   const update = (field: string, val: string) => setForm(f => ({ ...f, [field]: val }))
@@ -22,34 +21,25 @@ export default function SignupPage() {
     setError('')
     setLoading(true)
 
-    const { data, error: authError } = await supabase.auth.signUp({
+    const { error: authError } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
+      options: {
+        data: {
+          name: form.name,
+          contact: form.contact || null,
+          hostel: form.hostel || null,
+        },
+      },
     })
+
+    setLoading(false)
 
     if (authError) {
       setError(authError.message)
-      setLoading(false)
-      return
+    } else {
+      setSuccess(true)
     }
-
-    if (data.user) {
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id: data.user.id,
-        name: form.name,
-        contact: form.contact || null,
-        hostel: form.hostel || null,
-        is_admin: false,
-      })
-
-      if (profileError) {
-        setError('Account created but profile setup failed. Please contact admin.')
-      } else {
-        setSuccess(true)
-      }
-    }
-
-    setLoading(false)
   }
 
   if (success) {
@@ -63,7 +53,7 @@ export default function SignupPage() {
           <h2 className="font-display text-2xl font-bold mb-2">Check your email</h2>
           <p className="text-muted text-sm mb-6">
             We sent a confirmation link to <strong>{form.email}</strong>.
-            Click it to activate your account.
+            Click it to activate your account — your profile will be created automatically.
           </p>
           <Link href="/login" className="btn-primary">Go to Sign In</Link>
         </div>
