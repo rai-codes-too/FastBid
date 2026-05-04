@@ -42,6 +42,33 @@ export default function CreateListingPage() {
 
   const upd = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
 
+  // Compress image client-side via canvas before uploading.
+  // Resizes to max 1200px on longest side, re-encodes as JPEG at 80% quality.
+  // Typically reduces a 3–5MB phone photo to 150–400KB.
+  const compressImage = (file: File): Promise<File> => {
+    return new Promise(resolve => {
+      const img = new Image()
+      const url = URL.createObjectURL(file)
+      img.onload = () => {
+        URL.revokeObjectURL(url)
+        const MAX = 1200
+        let { width, height } = img
+        if (width > MAX || height > MAX) {
+          if (width > height) { height = Math.round(height * MAX / width); width = MAX }
+          else                { width = Math.round(width * MAX / height); height = MAX }
+        }
+        const canvas = document.createElement('canvas')
+        canvas.width = width; canvas.height = height
+        canvas.getContext('2d')!.drawImage(img, 0, 0, width, height)
+        canvas.toBlob(blob => {
+          resolve(blob ? new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }) : file)
+        }, 'image/jpeg', 0.80)
+      }
+      img.onerror = () => resolve(file) // fallback: use original
+      img.src = url
+    })
+  }
+
   const handleImageAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     if (images.length + files.length > 5) { setError('Max 5 images'); return }
@@ -70,10 +97,11 @@ export default function CreateListingPage() {
 
     const paths: string[] = []
     for (const file of images) {
-      const ext  = file.name.split('.').pop()
-      const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-      const { error: ue } = await supabase.storage.from('listing-images').upload(path, file)
-      if (!ue) paths.push(path)
+      const compressed = await compressImage(file)
+      const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
+      const { error: ue } = await supabase.storage.from('listing-images').upload(path, compressed, { contentType: 'image/jpeg' })
+      if (ue) console.error('Upload error:', ue.message)
+      else paths.push(path)
     }
 
     let ends_at: string | null = null
@@ -109,7 +137,7 @@ export default function CreateListingPage() {
           {/* Basic Info */}
           <SectionCard title="Basic Info">
             <Field label="Title *">
-              <input type="text" className="input" placeholder="e.g. 4 Tier book Shelf"
+              <input type="text" className="input" placeholder="e.g. HP Pavilion Laptop 15-inch"
                 value={form.title} onChange={e => upd('title', e.target.value)} required maxLength={100} />
             </Field>
             <Field label="Description">
@@ -162,7 +190,7 @@ export default function CreateListingPage() {
                       color: form.duration_type === d ? 'var(--accent-text)' : 'var(--text-muted)',
                       transition: 'all 0.15s',
                     }}>
-                    {d === 'fixed' ? 'Fixed Duration' : 'Open Until Sold'}
+                    {d === 'fixed' ? '📅 Fixed Duration' : '♾️ Open Until Sold'}
                   </button>
                 ))}
               </div>
@@ -248,7 +276,7 @@ export default function CreateListingPage() {
 
           <button type="submit" className="btn-primary" disabled={loading}
             style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: '1rem' }}>
-            {loading ? 'Publishing…' : 'Publish Listing'}
+            {loading ? 'Publishing…' : '🚀 Publish Listing'}
           </button>
         </form>
       </div>
