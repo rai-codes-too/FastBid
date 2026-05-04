@@ -110,7 +110,15 @@ export default function ListingDetailPage() {
         </Link>
 
         {/* Two-column layout */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px', alignItems: 'start' }}>
+        <style>{`
+          .listing-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
+          .listing-grid-sidebar { position: sticky; top: 72px; display: flex; flex-direction: column; gap: 16px; }
+          @media (max-width: 768px) {
+            .listing-grid { grid-template-columns: 1fr; }
+            .listing-grid-sidebar { position: static; }
+          }
+        `}</style>
+        <div className="listing-grid">
 
           {/* ── LEFT column ── */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', minWidth: 0 }}>
@@ -261,7 +269,7 @@ export default function ListingDetailPage() {
           </div>
 
           {/* ── RIGHT column ── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', position: 'sticky', top: '72px' }}>
+          <div className="listing-grid-sidebar">
 
             {/* Bid form */}
             <BidForm

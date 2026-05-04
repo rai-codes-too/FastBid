@@ -346,3 +346,26 @@ textarea.input { resize: vertical; }
   margin-left: auto;
   margin-right: auto;
 }
+
+/* ── Listing detail responsive grid ─────────────────────────────────────── */
+.listing-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+}
+.listing-grid-sidebar {
+  position: sticky;
+  top: 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+@media (max-width: 768px) {
+  .listing-grid {
+    grid-template-columns: 1fr;
+  }
+  .listing-grid-sidebar {
+    position: static;
+  }
+}
